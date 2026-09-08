@@ -89,6 +89,19 @@ app.get('/delete-task/:taskId', (req, res) => {
   });
 });
 
+app.get('/delete-tasks', (req, res) => {
+  // Kui antud ruuter läheb tööle:
+  // 1. Loetakse tasks.json fail sisse
+  readFile('./tasks.json').then((tasks) => {
+    // 2. Tühjendatakse ülesannete massiiv
+    const data = JSON.stringify(tasks, null, 2);
+    // 3. Salvestatakse tühi massiiv tagasi faili tasks.json ja suunatakse pealehele
+    writeFile('tasks.json', data).then(() => {
+      res.redirect('/');
+    });
+  });
+});
+
 app.listen(3001, () => {
   console.log('Example app is starter at http://localhost:3001');
 });
