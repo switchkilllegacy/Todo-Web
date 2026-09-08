@@ -38,40 +38,50 @@ const writeFile = (filename, data) => {
 app.get('/', (req, res) => {
   // tasks list data from file
   readFile('./tasks.json').then((tasks) => {
-    console.log(tasks);
-    res.render('index', { tasks: tasks });
+    res.render('index', {
+      tasks: tasks,
+      error: null,
+    });
   });
 });
 
-// for parsing application/x-www-form-urlencoded
+// For parsing application/x-www-form-urlencoded
 app.use(express.urlencoded({ extended: true }));
 
 app.post('/', (req, res) => {
-  // tasks list data from file
-  readFile('./tasks.json').then((tasks) => {
-    // add new task
-    // create new id automatically
-    let index;
-    if (tasks.length === 0) {
-      index = 1;
-    } else {
-      index = tasks[tasks.length - 1].id + 1;
-    }
-
-    // create task object
-    const newTask = {
-      id: index,
-      task: req.body.task,
-    };
-
-    console.log(newTask);
-    // add form sent task to tasks array
-    tasks.push(newTask);
-    data = JSON.stringify(tasks, null, 2);
-    writeFile('tasks.json', data);
-    // redirect to / to see result
-    res.redirect('/');
-  });
+  // controll data from form
+  let error = null;
+  if (req.body.task.trim().length == 0) {
+    error = 'Please insert correct task data';
+    readFile('./tasks.json').then((tasks) => {
+      res.render('index', {
+        tasks: tasks,
+        error: error,
+      });
+    });
+  } else {
+    // tasks list data from file
+    readFile('./tasks.json').then((tasks) => {
+      // add new task
+      // create new id automatically
+      let index;
+      if (tasks.length === 0) {
+        index = 1;
+      } else {
+        index = tasks[tasks.length - 1].id + 1;
+      }
+      // create task object
+      const newTask = {
+        id: index,
+        task: req.body.task,
+      };
+      // add form sent task to tasks array
+      tasks.push(newTask);
+      data = JSON.stringify(tasks, null, 2);
+      writeFile('tasks.json', data);
+      res.redirect('/');
+    });
+  }
 });
 
 app.get('/delete-task/:taskId', (req, res) => {
@@ -84,21 +94,16 @@ app.get('/delete-task/:taskId', (req, res) => {
     });
     data = JSON.stringify(tasks, null, 2);
     writeFile('tasks.json', data);
-    // redirect to / to see result
     res.redirect('/');
   });
 });
 
 app.get('/delete-tasks', (req, res) => {
-  // Kui antud ruuter läheb tööle:
-  // 1. Loetakse tasks.json fail sisse
   readFile('./tasks.json').then((tasks) => {
-    // 2. Tühjendatakse ülesannete massiiv
-    const data = JSON.stringify(tasks, null, 2);
-    // 3. Salvestatakse tühi massiiv tagasi faili tasks.json ja suunatakse pealehele
-    writeFile('tasks.json', data).then(() => {
-      res.redirect('/');
-    });
+    tasks = [];
+    data = JSON.stringify(tasks, null, 2);
+    writeFile('tasks.json', data);
+    res.redirect('/');
   });
 });
 
