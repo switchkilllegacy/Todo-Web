@@ -22,6 +22,19 @@ const readFile = (filename) => {
   });
 };
 
+const writeFile = (filename, data) => {
+  return new Promise((resolve, reject) => {
+    // get data from file
+    fs.writeFile(filename, data, 'utf-8', (err) => {
+      if (err) {
+        console.error(err);
+        return;
+      }
+      resolve(true);
+    });
+  });
+};
+
 app.get('/', (req, res) => {
   // tasks list data from file
   readFile('./tasks.json').then((tasks) => {
@@ -54,21 +67,10 @@ app.post('/', (req, res) => {
     console.log(newTask);
     // add form sent task to tasks array
     tasks.push(newTask);
-    console.log(tasks);
-
-    const data = JSON.stringify(tasks, null, 2);
-    console.log(data);
-
-    fs.writeFile('./tasks.json', data, 'utf-8', (err) => {
-      if (err) {
-        console.error(err);
-        return;
-      } else {
-        console.log('saved');
-      }
-      // redirect to / to see result
-      res.redirect('/');
-    });
+    data = JSON.stringify(tasks, null, 2);
+    writeFile('tasks.json', data);
+    // redirect to / to see result
+    res.redirect('/');
   });
 });
 
@@ -81,16 +83,10 @@ app.get('/delete-task/:taskId', (req, res) => {
       }
     });
     data = JSON.stringify(tasks, null, 2);
-    fs.writeFile('./tasks.json', data, 'utf-8', (err) => {
-      if (err) {
-        console.error(err);
-        return;
-      }
-      // redirect to / to see result
-      res.redirect('/');
-    });
+    writeFile('tasks.json', data);
+    // redirect to / to see result
+    res.redirect('/');
   });
-  console.log(deletedTaskId);
 });
 
 app.listen(3001, () => {
